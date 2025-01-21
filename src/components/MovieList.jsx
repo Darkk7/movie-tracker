@@ -8,7 +8,9 @@ const MovieList = ({ searchQuery }) => {
   const [error, setError] = useState(null);
   const [watchedMovies, setWatchedMovies] = useState([]);
   const [successMessage, setSuccessMessage] = useState(''); // State for success message
+  const [checkedCount, setCheckedCount] = useState(0); // State for count of checked movies
 
+  // Fetch movies from API
   const fetchMovies = async (searchQuery = '') => {
     setLoading(true);
     try {
@@ -36,6 +38,7 @@ const MovieList = ({ searchQuery }) => {
     }
   };
 
+  // Fetch watched movies from the database
   const fetchWatchedMovies = async () => {
     const { data, error } = await supabase
       .from('movies')
@@ -45,14 +48,19 @@ const MovieList = ({ searchQuery }) => {
     if (error) {
       console.error('Error fetching watched movies:', error);
     } else {
+      // Update watchedMovies state
       setWatchedMovies(data.map((movie) => movie.tmdb_id));
 
+      // Update movies state with watched status
       setMovies((prevMovies) =>
         prevMovies.map((movie) => ({
           ...movie,
           watched: data.some((watchedMovie) => watchedMovie.tmdb_id === movie.id),
         }))
       );
+
+      // Update the checked count based on movies marked as watched
+      setCheckedCount(data.length);
     }
   };
 
@@ -61,6 +69,7 @@ const MovieList = ({ searchQuery }) => {
     fetchWatchedMovies();
   }, [searchQuery]);
 
+  // Handle checkbox change and update database
   const handleCheckboxChange = async (tmdbId, isChecked) => {
     setMovies((prevMovies) =>
       prevMovies.map((movie) =>
@@ -72,12 +81,13 @@ const MovieList = ({ searchQuery }) => {
 
     try {
       await supabase.from('movies').upsert(updatedMovie, { onConflict: ['tmdb_id'] });
-      fetchWatchedMovies();
+      fetchWatchedMovies(); // Fetch updated watched movies after saving
     } catch (error) {
       console.error('Unexpected error during save:', error);
     }
   };
 
+  // Save watched status to the database
   const handleSave = async () => {
     const updatedMovies = movies
       .filter((movie) => movie.watched && movie.title)
@@ -101,7 +111,7 @@ const MovieList = ({ searchQuery }) => {
         setSuccessMessage('');
       } else {
         setSuccessMessage('Movies saved successfully!'); // Set success message
-        fetchWatchedMovies();
+        fetchWatchedMovies(); // Fetch the updated watched movies list
         setTimeout(() => setSuccessMessage(''), 3000); // Clear message after 3 seconds
       }
     } catch (error) {
@@ -109,6 +119,7 @@ const MovieList = ({ searchQuery }) => {
     }
   };
 
+  // Remove all watched movies
   const removeAllWatched = async () => {
     try {
       const updatedMovies = movies.map((movie) => ({
@@ -181,15 +192,18 @@ const MovieList = ({ searchQuery }) => {
       </div>
 
       <div style={styles.saveContainer}>
-
         <button variant="primary" style={styles.saveButton} onClick={handleSave}>
           Save Watched Status
         </button>
-        
+
         <button style={{ ...styles.deleteButton, ...styles.buttonSpacing }} onClick={removeAllWatched}>
           REMOVE ALL MOVIES FROM WATCHED
         </button>
-        
+
+        {/* Counter for checked movies */}
+        <div style={styles.counter}>
+          Movies marked as watched: {checkedCount}
+        </div>
       </div>
     </div>
   );
@@ -224,45 +238,51 @@ const styles = {
     borderRadius: '4px',
   },
   movieList: {
-   display:'grid', 
-   gridTemplateColumns:'repeat(auto-fill, minmax(200px,1fr))', 
-   gap:'15px', 
-   marginBottom:'20px'
-   },
-   movieCard:{
-     backgroundColor:'#fff', 
-     padding:'15px', 
-     borderRadius:'8px', 
-     boxShadow:'0px rgba(0 ,0 ,0)', 
-     display:"flex"
-   },
-   successMessage:{
-     color:'#28a745', 
-     fontWeight:'bold', 
-     textAlign:'center', 
-     marginBottom:'20px'
-   },
-   saveButton:{padding: '10px 20px',
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+    gap: '15px',
+    marginBottom: '20px',
+  },
+  movieCard: {
+    backgroundColor: '#fff',
+    padding: '15px',
+    borderRadius: '8px',
+    boxShadow: '0px rgba(0 ,0 ,0)',
+    display: 'flex',
+  },
+  successMessage: {
+    color: '#28a745',
+    fontWeight: 'bold',
     textAlign: 'center',
-    backgroundColor: '#007bff', // Primary color (blue)
-    color: '#fff',             // White text
+    marginBottom: '20px',
+  },
+  saveButton: {
+    padding: '10px 20px',
+    textAlign: 'center',
+    backgroundColor: '#007bff',
+    color: '#fff',
     border: 'none',
     borderRadius: '5px',
-    cursor: 'pointer'},   
-
-   saveContainer: { textAlign:'center' },
-
-   deleteButton: { padding: '10px 20px',
+    cursor: 'pointer',
+  },
+  saveContainer: { textAlign: 'center' },
+  deleteButton: {
+    padding: '10px 20px',
     textAlign: 'center',
     backgroundColor: '#dc3545',
-    color: '#fff',  
+    color: '#fff',
     border: 'none',
     borderRadius: '5px',
-    cursor: 'pointer', },
-
-   buttonSpacing: {
-      marginLeft: '10px',
-    },
+    cursor: 'pointer',
+  },
+  buttonSpacing: {
+    marginLeft: '10px',
+  },
+  counter: {
+    marginTop: '10px',
+    fontSize: '1.2rem',
+    color: '#333',
+  },
 };
 
 export default MovieList;
