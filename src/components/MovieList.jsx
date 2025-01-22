@@ -121,6 +121,12 @@ const MovieList = ({ searchQuery }) => {
 
   // Remove all watched movies
   const removeAllWatched = async () => {
+    const userConfirmed = window.confirm('Are you sure you want to remove all watched movies?');
+
+    if (!userConfirmed) {
+      return;
+    }
+
     try {
       const updatedMovies = movies.map((movie) => ({
         ...movie,
