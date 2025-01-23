@@ -164,7 +164,6 @@ const MovieList = ({ searchQuery }) => {
           type="text"
           value={searchQuery}
           onChange={() => {}}
-          placeholder="Search for a movie..."
           disabled
           style={styles.searchBar}
         />
