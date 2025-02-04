@@ -48,19 +48,22 @@ const MovieList = ({ searchQuery }) => {
     if (error) {
       console.error('Error fetching watched movies:', error);
     } else {
+      // Filter out blank records
+      const validWatchedMovies = data.filter((movie) => movie.tmdb_id && movie.title);
+
       // Update watchedMovies state
-      setWatchedMovies(data.map((movie) => movie.tmdb_id));
+      setWatchedMovies(validWatchedMovies.map((movie) => movie.tmdb_id));
 
       // Update movies state with watched status
       setMovies((prevMovies) =>
         prevMovies.map((movie) => ({
           ...movie,
-          watched: data.some((watchedMovie) => watchedMovie.tmdb_id === movie.id),
+          watched: validWatchedMovies.some((watchedMovie) => watchedMovie.tmdb_id === movie.id),
         }))
       );
 
-      // Update the checked count based on movies marked as watched
-      setCheckedCount(data.length);
+      // Update the checked count based on valid watched movies
+      setCheckedCount(validWatchedMovies.length);
     }
   };
 
