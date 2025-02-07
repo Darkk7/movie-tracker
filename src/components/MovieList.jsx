@@ -170,8 +170,6 @@ const MovieList = ({ searchQuery }) => {
         <button style={{ ...styles.deleteButton, ...styles.buttonSpacing }} onClick={removeAllWatched}>
           REMOVE ALL MOVIES FROM WATCHED
         </button>
-
-        <div style={styles.counter}>Movies marked as watched: {checkedCount}</div>
       </div>
     </div>
   );
@@ -205,6 +203,9 @@ const styles = {
     borderRadius: '8px',
     boxShadow: '0px rgba(0, 0, 0, 0.1)',
     display: 'flex',
+  },
+  saveContainer: {
+    textAlign: 'center',
   },
   successMessage: {
     color: '#28a745',
